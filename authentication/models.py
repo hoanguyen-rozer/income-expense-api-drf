@@ -1,19 +1,20 @@
 from django.db import models
-
+from rest_framework_simplejwt.tokens import RefreshToken
 # Create your models here.
-from django.contrib.auth.models import 
-    (AbstractBaseUser, BaseUserManager, PermissionsMixin)
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+
 
 class UserManager(BaseUserManager):
-    
+
     def create_user(self, username, email, password=None):
         if username is None:
             raise ValueError("Users should have a username")
         if email is None:
             raise ValueError("Users should have a email")
-        user = self.model(username=username, email=self.nomalize_email(email))
+        user = self.model(username=username, email=self.normalize_email(email))
         user.set_password(password)
         user.save()
+        return user
 
     def create_superuser(self, username, email, password):
         if password is None:
@@ -26,7 +27,7 @@ class UserManager(BaseUserManager):
         return user
 
 
-class User(AbstracBaseUser, PermissionsMixin):
+class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=255, unique=True, db_index=True)
     email = models.CharField(max_length=255, unique=True, db_index=True)
     is_verified = models.BooleanField(default=False)
@@ -35,11 +36,17 @@ class User(AbstracBaseUser, PermissionsMixin):
     create_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
+
     objects = UserManager()
 
     def __str__(self):
         return self.email
-    
-    def token(self):
-        return ''
 
+    def tokens(self):
+        refresh = RefreshToken.for_user(self)
+        return {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token)
+        }
