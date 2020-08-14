@@ -10,7 +10,8 @@ from django.conf import settings
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .utils import Util
-from .serializers import RegisterSerializer, EmailVerificationSerializer, LoginSerializer
+from .serializers import RegisterSerializer, ResetPasswordEmailRequestSerializer, EmailVerificationSerializer, LoginSerializer
+from .renderers import UserRenderer
 
 User = get_user_model()
 
@@ -18,6 +19,7 @@ User = get_user_model()
 class RegisterView(generics.GenericAPIView):
 
     serializer_class = RegisterSerializer
+    renderer_classes = (UserRenderer, )
 
     def post(self, request):
         user = request.data
@@ -74,3 +76,12 @@ class LoginAPIView(generics.GenericAPIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class RequestPasswordResetEmail(generics.GenericAPIView):
+
+    serializer_class = ResetPasswordEmailRequestSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)

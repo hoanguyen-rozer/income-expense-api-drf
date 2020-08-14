@@ -2,6 +2,10 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib import auth
 from rest_framework.exceptions import AuthenticationFailed
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+
 
 User = get_user_model()
 
@@ -66,3 +70,21 @@ class LoginSerializer(serializers.ModelSerializer):
         }
 
         return super().validate(attrs)
+
+
+class ResetPasswordEmailRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(min_length=2)
+    
+    class Meta:
+        fields = ['email']
+        
+    def validate(self, attrs):
+        try:
+            email = attrs.get('email', '')
+            if User.objects.filter(email=email).exists():
+                pass
+            return 
+        except expression as identifier:
+            pass
+        return super().validate(attrs)    
+    
